@@ -1,5 +1,6 @@
 from typing import override
 from tile import Tile
+from tile import TileType
 
 class Map:
     TILE_SIZE = Tile.TILE_SIZE
@@ -13,6 +14,8 @@ class Map:
             for x in range(Map.MAP_TILE_SIZE):
                 temp.append(Tile(x, y))
             self.mapGrid.append(temp)
+        for cell in self.mapGrid[99]:
+            cell.tileType = TileType.BLOCK
 
     @override
     def __str__(self):
