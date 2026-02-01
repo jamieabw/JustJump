@@ -8,6 +8,7 @@ class Player:
         self.width = 50
         self.height = 50
         self.color = (255, 255, 255)  # White color
+        self.isOnFloor = False
 
     def getRect(self):
         return Rect(self.x, self.y, self.width, self.height)
@@ -15,7 +16,7 @@ class Player:
     def getColour(self):
         return self.color
     
-    def isOnFloor(self, tilesBelow):
+    """def isOnFloor(self, tilesBelow):
         for tile in tilesBelow:
             if not tile:
                 continue
@@ -23,4 +24,4 @@ class Player:
                 if tile.tileType == TileType.BLOCK:
                     self.y = tile.y - self.height
                     return True
-        return False
+        return False"""

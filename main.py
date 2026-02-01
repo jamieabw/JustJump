@@ -86,17 +86,33 @@ class TestGame:
         pygame.display.update()
         pygame.display.flip()
 
-    def update(self):
+    """def update(self):
         self.getTilesToCheck()
         if not self.player.isOnFloor((self.tilesToCheck[2], self.tilesToCheck[3])):
             self.downVel += (DOWN_ACCELERATION / FPS)
         else:
             self.downVel = 0
         if self.moveVel != 0:
-            self.moveVel = max(0, (self.moveVel - (FRICTION_ACCELERATION / FPS)))
+            self.moveVel = max(0, (self.moveVel - (FRICTION_ACCELERATION / FPS)))"""
+    
+    def update(self):
+        if self.downVel < 0:
+            self.player.isOnFloor = False # this if statement fixes jittering as when snapping to the top,
+            # it would then fall again and consecutively trigger collisions
+
+        self.player.x += self.moveVel
+        self.checkXCollision()
+        self.downVel += (DOWN_ACCELERATION / FPS)
+        self.checkYCollision()
+
+        if self.player.isOnFloor:
+            self.downVel = 0
+            print("yes")
+        print(self.downVel)
 
         self.player.y += self.downVel
         self.player.x += self.moveVel
+        # the following is camera physics
         self.cameraX = self.player.x - self.screen.get_width() // 2
         self.cameraX = min(max(0, self.cameraX), Map.TILE_SIZE * Map.MAP_TILE_SIZE - self.screen.get_width())
         self.cameraY = self.player.y - self.screen.get_height() // 2
@@ -113,6 +129,7 @@ class TestGame:
     
     
     def testTiles(self):
+        # debug function for checking if the tiling detection was correct
         for tile in self.tilesToCheck:
             tile.tileType = TileType.BLOCK
     
@@ -123,15 +140,39 @@ class TestGame:
         bottomLeft = (self.player.x // Map.TILE_SIZE, (self.player.y + self.player.height) // Map.TILE_SIZE)
         bottomRight = ((self.player.x + self.player.width) // Map.TILE_SIZE, (self.player.y + self.player.height) // Map.TILE_SIZE)
         return [topLeft, topRight, bottomRight, bottomLeft]
+    
 
-    def checkCollision(self):
-        # this is actually working?
+    def checkXCollision(self):
         tiles = self.getTilesToCheck()
         for tile in tiles:
             if tile.tileType.name == "BLOCK" and self.player.getRect().colliderect(tile.getRect()):
-                print("collision")
+                if self.moveVel > 0: # if moving right
+                    self.player.x = tile.x - self.player.width
+                elif self.moveVel < 0: # if moving left
+                    self.player.x = tile.x + self.map.TILE_SIZE
+                print("Xcollision")
+                self.moveVel = 0
+                break
+                #self.downVel = 0
+                #self.player.y = tile.y - self.player.height
+
+    def checkYCollision(self):
+        tiles = self.getTilesToCheck()
+        for tile in tiles:
+            if tile.tileType.name == "BLOCK" and self.player.getRect().colliderect(tile.getRect()):
+                if self.downVel >= 0: # if falling
+                    self.player.y = tile.y - self.player.height
+                    self.player.isOnFloor = True
+                elif self.downVel <= 0: # if jumping
+                    self.player.y = tile.y + self.map.TILE_SIZE
+                print("Ycollision")
                 self.downVel = 0
-                self.player.y = tile.y - self.player.height
+                break
+
+    def checkCollision(self):
+        self.player.isOnFloor = False
+        self.checkXCollision()
+        self.checkYCollision()
 
 
         
