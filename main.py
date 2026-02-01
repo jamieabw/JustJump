@@ -2,12 +2,16 @@ import pygame # type: ignore
 import random
 from map import Map
 from player import Player
+from tile import TileType
 
 """
 CURRENTLY: there is a grid system, and a player (kind of?), there is momentum type physics and
 gravity is already implemented, the camera has also been successfully implemented
 TODO: 
-- collisions
+- collisions - figure out the tiling indexes for the left, right, up, and down
+- implement left and right movement
+- proper map loading from file
+- procedural map generation
 - test hard coded map
 - artwork
 
@@ -18,7 +22,7 @@ TODO:
 FPS = 60
 WIDTH = 30
 HEIGHT = 30
-DOWN_ACCELERATION = 5
+DOWN_ACCELERATION = 10
 MOVEMENT_ACCELERATION = 1.5
 FRICTION_ACCELERATION = 1.5
 
@@ -31,6 +35,7 @@ class TestGame:
         self.delta = 0
         self.downVel = 0
         self.moveVel = 0
+        self.tilesToCheck = ()
         self.pipes = []
         self.cameraX, self.cameraY = (0,0)
         self.map = Map()
@@ -47,7 +52,8 @@ class TestGame:
 
     
     def eventLoop(self):
-        self.checkCollision()
+        
+        #self.checkCollision()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
@@ -55,15 +61,16 @@ class TestGame:
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
+                    self.player.y -= 10
                     self.downVel = -10
                 if event.key == pygame.K_d: # this is currently only tapping, not holding FIX THIS
                     self.player.x += 10 # TEMPORARY!!!!!!
 
     def runLoop(self):
         while self.running:
-            self.eventLoop()
             self.update()
             self.render()
+            self.eventLoop()
             self.clock.tick(FPS)
 
 
@@ -80,7 +87,11 @@ class TestGame:
         pygame.display.flip()
 
     def update(self):
-        self.downVel += (DOWN_ACCELERATION / FPS)
+        self.getTilesToCheck()
+        if not self.player.isOnFloor((self.tilesToCheck[2], self.tilesToCheck[3])):
+            self.downVel += (DOWN_ACCELERATION / FPS)
+        else:
+            self.downVel = 0
         if self.moveVel != 0:
             self.moveVel = max(0, (self.moveVel - (FRICTION_ACCELERATION / FPS)))
 
@@ -92,21 +103,36 @@ class TestGame:
         self.cameraY = min(max(0, self.cameraY), Map.TILE_SIZE * Map.MAP_TILE_SIZE - self.screen.get_height())
 
 
-    def getTiles(self):
-        # i need to somehow get this to be the index not the pixel pos
-        leftTile = self.player.x // Map.TILE_SIZE
-        rightTile = (self.player.x + self.player.width - 1) // Map.TILE_SIZE
-        downTile = (self.player.y + self.player.height - 1) // Map.TILE_SIZE
-        upTile = self.player.y // Map.TILE_SIZE
-        return (upTile, rightTile, downTile, leftTile)
+    def getTilesToCheck(self):
+        # i need to somehow get this to be the index not thed pixel pos
+        cornerCoords = self.getPlayerCornerCoords()
+        self.tilesToCheck = []
+        for x,y in cornerCoords:
+            self.tilesToCheck.append(self.map.mapGrid[int(y)][x])
+        return self.tilesToCheck
+    
+    
+    def testTiles(self):
+        for tile in self.tilesToCheck:
+            tile.tileType = TileType.BLOCK
+    
+    def getPlayerCornerCoords(self):
+        # gets each corner of the player rect hitbox for determining which tiles to check for collisions
+        topLeft = (self.player.x // Map.TILE_SIZE, self.player.y // Map.TILE_SIZE)
+        topRight= ((self.player.x + self.player.width) // Map.TILE_SIZE, self.player.y // Map.TILE_SIZE)
+        bottomLeft = (self.player.x // Map.TILE_SIZE, (self.player.y + self.player.height) // Map.TILE_SIZE)
+        bottomRight = ((self.player.x + self.player.width) // Map.TILE_SIZE, (self.player.y + self.player.height) // Map.TILE_SIZE)
+        return [topLeft, topRight, bottomRight, bottomLeft]
 
     def checkCollision(self):
-        tiles = self.getTiles()
+        # this is actually working?
+        tiles = self.getTilesToCheck()
         for tile in tiles:
             if tile.tileType.name == "BLOCK" and self.player.getRect().colliderect(tile.getRect()):
                 print("collision")
                 self.downVel = 0
                 self.player.y = tile.y - self.player.height
+
 
         
 

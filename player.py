@@ -1,4 +1,5 @@
 from pygame import Rect
+from tile import Tile, TileType
 
 class Player:
     def __init__(self, x: int, y: int):
@@ -13,3 +14,13 @@ class Player:
 
     def getColour(self):
         return self.color
+    
+    def isOnFloor(self, tilesBelow):
+        for tile in tilesBelow:
+            if not tile:
+                continue
+            else:
+                if tile.tileType == TileType.BLOCK:
+                    self.y = tile.y - self.height
+                    return True
+        return False
