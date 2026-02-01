@@ -47,7 +47,7 @@ class TestGame:
         self.screen = pygame.display.set_mode((1000, 800))
         self.running = True
         self.clock = pygame.time.Clock()
-        self.player = Player(200, 0)
+        self.player = Player(200, 800)
         self.runLoop()
 
     
@@ -63,8 +63,17 @@ class TestGame:
                 if event.key == pygame.K_SPACE:
                     self.player.y -= 10
                     self.downVel = -10
-                if event.key == pygame.K_d: # this is currently only tapping, not holding FIX THIS
-                    self.player.x += 10 # TEMPORARY!!!!!!
+
+
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_d]:
+                if self.moveVel < 0:
+                    self.moveVel = 0
+                self.moveVel += (10 / FPS)
+            if keys[pygame.K_a]:
+                if self.moveVel > 0:
+                    self.moveVel = 0
+                self.moveVel -= (10 / FPS)
 
     def runLoop(self):
         while self.running:
@@ -96,9 +105,9 @@ class TestGame:
             self.moveVel = max(0, (self.moveVel - (FRICTION_ACCELERATION / FPS)))"""
     
     def update(self):
-        if self.downVel < 0:
+        if self.downVel != 0:
             self.player.isOnFloor = False # this if statement fixes jittering as when snapping to the top,
-            # it would then fall again and consecutively trigger collisions
+            # it would then fall again and consecutively trigger collisions, this is only a temporary fix thoa
 
         self.player.x += self.moveVel
         self.checkXCollision()
@@ -124,7 +133,7 @@ class TestGame:
         cornerCoords = self.getPlayerCornerCoords()
         self.tilesToCheck = []
         for x,y in cornerCoords:
-            self.tilesToCheck.append(self.map.mapGrid[int(y)][x])
+            self.tilesToCheck.append(self.map.mapGrid[int(y)][int(x)])
         return self.tilesToCheck
     
     
@@ -144,7 +153,7 @@ class TestGame:
 
     def checkXCollision(self):
         tiles = self.getTilesToCheck()
-        for tile in tiles:
+        for tile in tiles[:2]:
             if tile.tileType.name == "BLOCK" and self.player.getRect().colliderect(tile.getRect()):
                 if self.moveVel > 0: # if moving right
                     self.player.x = tile.x - self.player.width
@@ -158,21 +167,19 @@ class TestGame:
 
     def checkYCollision(self):
         tiles = self.getTilesToCheck()
-        for tile in tiles:
+        for tile in tiles[2:4]:
             if tile.tileType.name == "BLOCK" and self.player.getRect().colliderect(tile.getRect()):
                 if self.downVel >= 0: # if falling
-                    self.player.y = tile.y - self.player.height
+                    self.player.y = tile.y - self.player.height + 1 # this fixes the jittering by planting the player 1px into ground
                     self.player.isOnFloor = True
-                elif self.downVel <= 0: # if jumping
+                    self.downVel = 0
+                    return
+                elif self.downVel <= 0: # if jumpingd
                     self.player.y = tile.y + self.map.TILE_SIZE
-                print("Ycollision")
-                self.downVel = 0
-                break
-
-    def checkCollision(self):
+                    self.downVel = 0
+                    return
         self.player.isOnFloor = False
-        self.checkXCollision()
-        self.checkYCollision()
+
 
 
         

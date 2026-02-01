@@ -16,6 +16,12 @@ class Map:
             self.mapGrid.append(temp)
         for cell in self.mapGrid[99]:
             cell.tileType = TileType.BLOCK
+        for cell in self.mapGrid[98]:
+            cell.tileType = TileType.BLOCK
+        self.mapGrid[99][30].tileType = TileType.EMPTY
+        self.mapGrid[98][30].tileType = TileType.EMPTY
+        self.mapGrid[99][29].tileType = TileType.EMPTY
+        self.mapGrid[98][29].tileType = TileType.EMPTY
 
     @override
     def __str__(self):
