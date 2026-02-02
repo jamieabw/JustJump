@@ -8,6 +8,10 @@ class Map:
     def __init__(self):
         self.mapGrid = []
         
+
+    """
+    currently a temp function to draw a random hardcoded map, will eventually generate a random map
+    """
     def createMapGrid(self):
         for y in range(Map.MAP_TILE_SIZE):
             temp = [] # stores all x for a given y
@@ -22,8 +26,12 @@ class Map:
         for i in range(0, len(self.mapGrid), 3):
             for j in range(0, len(self.mapGrid[i]), 4):
                 self.mapGrid[j][i].tileType = TileType.BLOCK
+        self.mapGrid[98][20].tileType = TileType.SPIKE
         
 
+    """
+    debugging function to print out the grid in terminal
+    """
     @override
     def __str__(self):
         result = ""
