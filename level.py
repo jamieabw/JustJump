@@ -24,10 +24,6 @@ DOWN_ACCELERATION = 10
 MOVEMENT_ACCELERATION = 1.5
 FRICTION_ACCELERATION = 1.5
 
-def main():
-    test = Level()
-    test.run()
-
 class Level:
     def __init__(self):
         self.delta = 0
@@ -227,11 +223,3 @@ class Level:
     """
     def reset(self):
         self.startMap()
-
-
-
-
-        
-
-if __name__ == "__main__":
-    main()
