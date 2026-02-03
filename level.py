@@ -23,12 +23,15 @@ FPS = 60
 DOWN_ACCELERATION = 10
 MOVEMENT_ACCELERATION = 1.5
 FRICTION_ACCELERATION = 1.5
+MAX_VELOCITY = 1
 
 class Level:
     def __init__(self):
         self.delta = 0
         self.tilesToCheck = ()
         self.cameraX, self.cameraY = (0,0)
+        self.collisionTypes = {"top": False, "bottom":False, "left":False,"right":False}
+        self.airTimer =0
 
 
     # function to start the game
@@ -64,9 +67,10 @@ class Level:
                 exit()
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and self.player.isOnFloor:
+                if event.key == pygame.K_SPACE and self.airTimer < 6:
                     self.player.y -= 10
                     self.downVel = -10
+
 
 
             keys = pygame.key.get_pressed()
@@ -113,20 +117,24 @@ class Level:
     - camera logic
     """
     def update(self):
-        if self.downVel != 0:
-            self.player.isOnFloor = False # this if statement fixes jittering as when snapping to the top,
-            # it would then fall again and consecutively trigger collisions, this is only a temporary fix thoa
+        if self.collisionTypes["bottom"]:
+            self.airTimer = 0
+        else:
+            self.airTimer += 1
+        """ self.playerMovement = [0,0]
+        self.playerMovement[0] += self.moveVel
+        self.playerMovement[1] += self.downVel"""
+
 
         self.player.x += self.moveVel
-        self.checkXCollision()
+        self.newCollisionLogicX()
+        #self.checkXCollision()
 
-        self.downVel += (DOWN_ACCELERATION / FPS)
+        self.downVel = min(MAX_VELOCITY, self.downVel + (DOWN_ACCELERATION / FPS))
         self.player.y += self.downVel
-        self.checkYCollision()
+        self.newCollisionLogicY()
+        #self.checkYCollision()
 
-        if self.player.isOnFloor:
-            self.downVel = 0
-        print(self.downVel)
 
         #self.player.x += self.moveVel
         # the following is camera physics
@@ -143,7 +151,8 @@ class Level:
         cornerCoords = self.getPlayerCornerCoords()
         self.tilesToCheck = []
         for x,y in cornerCoords:
-            self.tilesToCheck.append(self.map.mapGrid[int(y)][int(x)])
+            if self.player.getRect().colliderect(self.map.mapGrid[int(y)][int(x)].getRect()):
+                self.tilesToCheck.append(self.map.mapGrid[int(y)][int(x)])
         return self.tilesToCheck
     
     
@@ -172,22 +181,7 @@ class Level:
     
 
 
-    """
-    deals with collisions on the x-axis
-    """
-    def checkXCollision(self):
-        tiles = self.getTilesToCheck()
-        for tile in tiles[:2]:
-            if tile.tileType.name == "BLOCK" and self.player.getRect().colliderect(tile.getRect()):
-                if self.moveVel > 0: # if moving right
-                    self.player.x = tile.x - self.player.width
-                elif self.moveVel < 0: # if moving left
-                    self.player.x = tile.x + self.map.TILE_SIZE
-                print("Xcollision")
-                self.moveVel = 0
-                break
-                #self.downVel = 0
-                #self.player.y = tile.y - self.player.height
+
 
 
     """
@@ -198,25 +192,35 @@ class Level:
     """
 
 
-    """
-    deals with collisions on the y-axis
-    """
-    def checkYCollision(self):
-        tiles = self.getTilesToCheck()
-        for tile in tiles:
-            if tile.tileType.name == "BLOCK" and self.player.getRect().colliderect(tile.getRect()):
-                if self.downVel >= 0: # if falling
-                    self.player.y = tile.y - self.player.height + 1 # this fixes the jittering by planting the player 1px into ground
-                    self.player.isOnFloor = True
+    def newCollisionLogicX(self):
+        self.collisionTypes["left"] = False
+        self.collisionTypes["right"] = False
+        for tile in self.getTilesToCheck():
+            if tile.tileType.name != "EMPTY":
+                if self.moveVel > 0:
+                    self.player.x = tile.x - self.player.width # self.player.left = tile.right
+                    self.collisionTypes["right"] = True
+                    self.moveVel = 0
+                elif self.moveVel < 0:
+                    self.player.x = tile.x + Map.TILE_SIZE
+                    self.collisionTypes["left"] = True
+                    self.moveVel = 0
+
+
+    def newCollisionLogicY(self):
+        self.collisionTypes["top"] = False
+        self.collisionTypes["bottom"] = False
+        for tile in self.getTilesToCheck():
+            if tile.tileType.name != "EMPTY":
+                if self.downVel > 0:
+                    self.player.y = tile.y - self.player.height
+                    self.collisionTypes["bottom"] = True
                     self.downVel = 0
-                    return
-                elif self.downVel <= 0: # if jumpingd
-                    self.player.y = tile.y + self.map.TILE_SIZE
+                elif self.downVel < 0:
+                    self.player.y = tile.y + Map.TILE_SIZE
+                    self.collisionTypes["top"] = True
                     self.downVel = 0
-                    return
-            elif tile.tileType.name == "SPIKE" and self.player.getRect().colliderect(tile.getRect()):
-                self.reset()
-        self.player.isOnFloor = False
+        
 
 
     """
