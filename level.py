@@ -75,7 +75,7 @@ class Level:
                 exit()
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and self.airTimer < 6:
+                if event.key == pygame.K_SPACE and self.airTimer < 600: #URGENT CHANGE
                     self.downVel = JUMP_ACCELERATION
 
         keys = pygame.key.get_pressed()
