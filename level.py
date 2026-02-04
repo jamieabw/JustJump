@@ -11,21 +11,19 @@ TODO:
 - add spike generation
 - test entity spawning
 - entity pathfinding
-- exit / entrance implementation
 - timer implementation
-- better movement physics
-
+- finalise island generation
 """
 
 
 # constants
 FPS = 60
-DOWN_ACCELERATION = 10
-JUMP_ACCELERATION = -10
-MOVEMENT_ACCELERATION = 20
+DOWN_ACCELERATION = 10 * FPS
+JUMP_ACCELERATION = -10 * FPS
+MOVEMENT_ACCELERATION = 20 * FPS
 FRICTION_MULTIPLIER = 0.9 # yes this is hardcoded, leave me alomne
-MAX_DOWN_VELOCITY = 25
-MAX_SIDEWAY_VELOCITY = 10
+MAX_DOWN_VELOCITY = 25 * FPS
+MAX_SIDEWAY_VELOCITY = 10 * FPS
 MIN_MOVE_SPEED = 0
 TIME_TO_REACH_MAX_MOV = MAX_SIDEWAY_VELOCITY / MOVEMENT_ACCELERATION
 
@@ -75,23 +73,23 @@ class Level:
                 exit()
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and self.airTimer < 600: #URGENT CHANGE
+                if event.key == pygame.K_SPACE and self.airTimer < 0.6: #URGENT CHANGE
                     self.downVel = JUMP_ACCELERATION
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_d]:
             if self.moveVel < 0:
                 self.moveVel = 0
-            self.moveVel = min(max(self.moveVel + (MOVEMENT_ACCELERATION / FPS), MIN_MOVE_SPEED), MAX_SIDEWAY_VELOCITY)
+            self.moveVel = min(max(self.moveVel + (MOVEMENT_ACCELERATION * self.delta), MIN_MOVE_SPEED), MAX_SIDEWAY_VELOCITY)
         if keys[pygame.K_a]:
             if self.moveVel > 0:
                 self.moveVel = 0
-            self.moveVel = max(min(self.moveVel - (MOVEMENT_ACCELERATION / FPS), -MIN_MOVE_SPEED), -MAX_SIDEWAY_VELOCITY)
+            self.moveVel = max(min(self.moveVel - (MOVEMENT_ACCELERATION * self.delta), -MIN_MOVE_SPEED), -MAX_SIDEWAY_VELOCITY)
         if not ((pygame.key.get_pressed()[pygame.K_a] or pygame.key.get_pressed()[pygame.K_d])):
             if self.moveVel > 0:
-                self.moveVel = max(0, self.moveVel * FRICTION_MULTIPLIER)
+                self.moveVel = max(0, self.moveVel * FRICTION_MULTIPLIER * self.delta * FPS)
             elif self.moveVel < 0:
-                self.moveVel = min(0, self.moveVel * FRICTION_MULTIPLIER)
+                self.moveVel = min(0, self.moveVel * FRICTION_MULTIPLIER * self.delta * FPS)
 
 
 
@@ -101,10 +99,10 @@ class Level:
     """
     def runLoop(self):
         while self.running:
+            self.delta = self.clock.tick(FPS) / 1000
             self.eventLoop()
             self.update()
             self.render()
-            self.clock.tick(FPS)
 
     """
     render loop, renders things onto the scren
@@ -132,13 +130,13 @@ class Level:
         if self.collisionTypes["bottom"]:
             self.airTimer = 0
         else:
-            self.airTimer += 1
+            self.airTimer += self.delta
 
-        self.player.x += self.moveVel
+        self.player.x += self.moveVel * self.delta
         self.newCollisionLogicX()
 
-        self.downVel = min(MAX_DOWN_VELOCITY, self.downVel + (DOWN_ACCELERATION / FPS))
-        self.player.y += self.downVel
+        self.downVel = min(MAX_DOWN_VELOCITY, self.downVel + (DOWN_ACCELERATION * self.delta))
+        self.player.y += self.downVel * self.delta
         self.newCollisionLogicY()
 
         # the following is camera physics

@@ -83,8 +83,8 @@ class Map:
         return island
     
 
-    def intersects(self, a, b, padding_tiles=1):
-        pad = padding_tiles * Map.TILE_SIZE
+    def intersects(self, a, b, paddingTiles=1):
+        pad = paddingTiles * Map.TILE_SIZE
 
         return not (
             a.x + a.width + pad <= b.x - pad or
