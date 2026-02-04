@@ -5,9 +5,9 @@ from random import randrange, randint, choice
 
 
 X_TILES_GAP = 6 # maximum 14 tiles away x
-Y_TILES_GAP = 2
+Y_TILES_GAP = 1
 SPAWN_TILE_X = 1
-SPAWN_TILE_Y = 98
+SPAWN_TILE_Y = 97
 
 class Map:
     TILE_SIZE = Tile.TILE_SIZE
@@ -38,12 +38,32 @@ class Map:
         self.populateWithIslands()
         self.fillAmbientIslands()
         for island in self.islands:
-            tileX = int(island.x // Map.TILE_SIZE)
-            tileY = int(island.y // Map.TILE_SIZE)
-            self.mapGrid[tileY][tileX].tileType = TileType.BLOCK
+            startTileX = int((island.x - (island.width // 2)) // Map.TILE_SIZE)
+            startTileY = int((island.y - (island.height // 2))  // Map.TILE_SIZE)
+            endTileX = int((island.x + (island.width // 2)) // Map.TILE_SIZE)
+            endTileY = int((island.y + (island.height // 2))  // Map.TILE_SIZE)#
+            for y in range(startTileY, endTileY):
+                for x in range(startTileX, endTileX):
+                    if x == SPAWN_TILE_X:
+                        continue # temp fix for bug involving being trapped inside spawn island
+                    if x == startTileX or x == endTileX - 1 or y == startTileY or y == endTileY - 1:
+                        if randint(0,1) == 1:
+                            continue
+                    """
+                    CRITICAL BUG HERE INVOLVING INDEX OUT OF BOUNDS
+                    """
+                    try:
+                        self.mapGrid[y][x].tileType = TileType.BLOCK
+                    except IndexError:
+                        continue
 
+
+
+    """
+    Populates the map with path islands
+    """
     def populateWithIslands(self):
-        self.islands.append(self.createPathIsland(Island(SPAWN_TILE_X * Map.TILE_SIZE, SPAWN_TILE_Y * Map.TILE_SIZE,0,0)))
+        self.islands.append(self.createPathIsland(Island(0 * Map.TILE_SIZE, (Map.MAP_TILE_SIZE - 1) * Map.TILE_SIZE,0,0)))
         for i in range(100):
             try:
                 self.islands.append(self.createPathIsland(self.islands[-1]))
@@ -51,31 +71,42 @@ class Map:
                 break
     
 
+
+
+    """
+    Generates islands to fill the empty space in the map, some may be unreachable by the player
+    """
     def fillAmbientIslands(self, count=200):
-        while len(self.islands) < count:
-            x = randint(2, Map.MAP_TILE_SIZE - 10) * Map.TILE_SIZE
-            y = randint(2, Map.MAP_TILE_SIZE - 10) * Map.TILE_SIZE
+        counter = 0
+        while counter < count:
+            counter+= 1
+            for attempt in range(5):
 
-            width = randint(2, 6) * Map.TILE_SIZE
-            height = randint(2, 6) * Map.TILE_SIZE
+                x = randint(2, Map.MAP_TILE_SIZE - 2) * Map.TILE_SIZE
+                y = randint(2, Map.MAP_TILE_SIZE - 2) * Map.TILE_SIZE
 
-            island = Island(x, y, width, height)
+                width = randint(4, 6) * Map.TILE_SIZE
+                height = randint(4, 6) * Map.TILE_SIZE
 
-            if not any(self.intersects(island, other) for other in self.islands):
-                self.islands.append(island)
+                island = Island(x, y, width, height)
+                if not any(self.intersects(island, other) for other in self.islands):
+                    self.islands.append(island)
+                    break
 
 
         
 
 
         
-
+    """
+    Generates an island based on a previous island to ensure a reachable path is created for the player
+    """
     def createPathIsland(self, prevIsland):
         xGap = (X_TILES_GAP * (randrange(4, 9) / 10)) * Map.TILE_SIZE
         yGap = (Y_TILES_GAP * (randrange(4,9) / 10)) * Map.TILE_SIZE
-        width = randint(2, 4) * Map.TILE_SIZE
-        height = randint(2, 4) * Map.TILE_SIZE
-        island = Island(prevIsland.x + prevIsland.width + xGap, prevIsland.y - prevIsland.height - yGap, width, height)
+        width = randint(4, 6) * Map.TILE_SIZE
+        height = randint(4, 6) * Map.TILE_SIZE
+        island = Island(prevIsland.x + prevIsland.width + xGap, prevIsland.y - int(prevIsland.height // 2) - yGap, width, height)
         #island = Island(prevIsland.x +  xGap, prevIsland.y -  yGap, width, height)
         tileX = int(island.x // Map.TILE_SIZE)
         tileY = int(island.y // Map.TILE_SIZE)
@@ -83,7 +114,11 @@ class Map:
         return island
     
 
-    def intersects(self, a, b, paddingTiles=1):
+
+    """
+    Check if two objects are intersecting
+    """
+    def intersects(self, a, b, paddingTiles=2):
         pad = paddingTiles * Map.TILE_SIZE
 
         return not (

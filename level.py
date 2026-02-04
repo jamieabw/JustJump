@@ -37,6 +37,7 @@ class Level:
         self.cameraX, self.cameraY = (0,0)
         self.collisionTypes = {"top": False, "bottom":False, "left":False,"right":False}
         self.airTimer =0
+        self.timer = 255
 
 
     # function to start the game
@@ -109,14 +110,25 @@ class Level:
     """
     def render(self):
         self.screen.fill((0,0,0))
-        for row in self.map.mapGrid:
+        startX = min(int(self.cameraX // Map.TILE_SIZE), 100)
+        endX   = min(int((self.cameraX + self.screen.get_width()) // (Map.TILE_SIZE - 1)) + 1, 100)
+        startY = min(int(self.cameraY // Map.TILE_SIZE), 100)
+        endY   = min(int((self.cameraY + self.screen.get_height()) // (Map.TILE_SIZE)) + 1, 100)
+
+        for y in range(startY, endY):
+            for x in range(startX, endX):
+                tempRect = self.map.mapGrid[y][x].getRect()
+                tempRect.x -= (self.cameraX)
+                tempRect.y -= (self.cameraY)
+                pygame.draw.rect(self.screen, self.map.mapGrid[y][x].getColour(), tempRect)
+
+        """for row in self.map.mapGrid:
             for tile in row:
                 tempRect = tile.getRect()
                 tempRect.x -= (self.cameraX)
                 tempRect.y -= (self.cameraY)
-                pygame.draw.rect(self.screen, tile.getColour(), tempRect)
+                pygame.draw.rect(self.screen, tile.getColour(), tempRect)"""
         pygame.draw.rect(self.screen, self.player.getColour(), self.player.getRect().move(-self.cameraX, -self.cameraY))
-        pygame.display.update()
         pygame.display.flip()
     
     """
@@ -127,6 +139,7 @@ class Level:
     - camera logic
     """
     def update(self):
+        self.timer -= self.delta
         if self.collisionTypes["bottom"]:
             self.airTimer = 0
         else:
@@ -153,6 +166,8 @@ class Level:
         cornerCoords = self.getPlayerCornerCoords()
         self.tilesToCheck = []
         for x,y in cornerCoords:
+            x = min(x, 99)
+            y = min(y, 99)
             if self.player.getRect().colliderect(self.map.mapGrid[int(y)][int(x)].getRect()):
                 self.tilesToCheck.append(self.map.mapGrid[int(y)][int(x)])
         return self.tilesToCheck
