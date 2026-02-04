@@ -8,3 +8,10 @@ def main(debug=False):
 
 if __name__ == "__main__":
     main()
+
+
+"""
+potential idea to incorporate the inaccesibility of some islands as a feature of the game and to have a "multijump" ability
+purchasable in the shop for a large amount which is similar to the debugging jumping mechanism
+
+"""

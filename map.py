@@ -44,10 +44,10 @@ class Map:
             endTileY = int((island.y + (island.height // 2))  // Map.TILE_SIZE)#
             for y in range(startTileY, endTileY):
                 for x in range(startTileX, endTileX):
-                    if x == SPAWN_TILE_X:
+                    if x == SPAWN_TILE_X or y == Map.MAP_TILE_SIZE - 2:
                         continue # temp fix for bug involving being trapped inside spawn island
                     if x == startTileX or x == endTileX - 1 or y == startTileY or y == endTileY - 1:
-                        if randint(0,1) == 1:
+                        if randint(0,2) == 1:
                             continue
                     """
                     CRITICAL BUG HERE INVOLVING INDEX OUT OF BOUNDS
@@ -56,6 +56,8 @@ class Map:
                         self.mapGrid[y][x].tileType = TileType.BLOCK
                     except IndexError:
                         continue
+        self.populateWithSpikes()
+
 
 
 
@@ -85,8 +87,8 @@ class Map:
                 x = randint(2, Map.MAP_TILE_SIZE - 2) * Map.TILE_SIZE
                 y = randint(2, Map.MAP_TILE_SIZE - 2) * Map.TILE_SIZE
 
-                width = randint(4, 6) * Map.TILE_SIZE
-                height = randint(4, 6) * Map.TILE_SIZE
+                width = randint(4, 10) * Map.TILE_SIZE
+                height = randint(4, 10) * Map.TILE_SIZE
 
                 island = Island(x, y, width, height)
                 if not any(self.intersects(island, other) for other in self.islands):
@@ -104,8 +106,8 @@ class Map:
     def createPathIsland(self, prevIsland):
         xGap = (X_TILES_GAP * (randrange(4, 9) / 10)) * Map.TILE_SIZE
         yGap = (Y_TILES_GAP * (randrange(4,9) / 10)) * Map.TILE_SIZE
-        width = randint(4, 6) * Map.TILE_SIZE
-        height = randint(4, 6) * Map.TILE_SIZE
+        width = randint(4, 10) * Map.TILE_SIZE
+        height = randint(4, 8) * Map.TILE_SIZE
         island = Island(prevIsland.x + prevIsland.width + xGap, prevIsland.y - int(prevIsland.height // 2) - yGap, width, height)
         #island = Island(prevIsland.x +  xGap, prevIsland.y -  yGap, width, height)
         tileX = int(island.x // Map.TILE_SIZE)
@@ -127,6 +129,15 @@ class Map:
             a.y + a.height + pad <= b.y - pad or
             a.y - pad >= b.y + b.height + pad
         )
+    
+
+    def populateWithSpikes(self):
+        for y in range(1, Map.MAP_TILE_SIZE):
+            for x in range(2, Map.MAP_TILE_SIZE - 1):
+                if self.mapGrid[y][x].tileType == TileType.BLOCK and self.mapGrid[y-1][x].tileType == TileType.EMPTY:
+                    if randint(0,5) == 1:
+                        self.mapGrid[y-1][x].tileType = TileType.SPIKE
+
 
         
 
