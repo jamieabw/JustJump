@@ -3,6 +3,7 @@ import random
 from map import Map, SPAWN_TILE_X, SPAWN_TILE_Y
 from player import Player
 from tile import TileType
+from walker import Walker
 
 """
 CURRENTLY: there is a grid system, and a player (kind of?), there is momentum type physics and
@@ -35,6 +36,7 @@ class Level:
         self.delta = 0
         self.tilesToCheck = ()
         self.cameraX, self.cameraY = (0,0)
+        self.enemies = []
         self.collisionTypes = {"top": False, "bottom":False, "left":False,"right":False}
         self.airTimer =0
         self.timer = 255
@@ -49,6 +51,21 @@ class Level:
         self.runLoop()
 
 
+    def generateEnemies(self, enemyCount=10):
+        for i in range(enemyCount):
+            self.enemies.append(Walker(0,0,50,50,100,self.map.islands, self.map))
+
+    def testRenderEnemies(self):
+        for enemy in self.enemies:
+            if enemy.alive:
+                enemy.movement(self.map, self.delta)
+                tempRect = pygame.Rect(enemy.x - self.cameraX, enemy.y - self.cameraY, enemy.width, enemy.height)
+                pygame.draw.rect(self.screen, (255,255,255), tempRect)
+                if self.player.getRect().colliderect(tempRect.move(self.cameraX, self.cameraY)):
+                    self.reset()
+
+                
+
     """
     start a new map and reset all the player attributes which are not global to all maps
     """
@@ -57,6 +74,7 @@ class Level:
         self.player = Player(SPAWN_TILE_X * Map.TILE_SIZE, SPAWN_TILE_Y * Map.TILE_SIZE)
         self.map = Map()
         self.map.createMapGrid()
+        self.generateEnemies()
         self.downVel = 0
         self.moveVel = 0
 
@@ -129,6 +147,7 @@ class Level:
                 tempRect.y -= (self.cameraY)
                 pygame.draw.rect(self.screen, tile.getColour(), tempRect)"""
         pygame.draw.rect(self.screen, self.player.getColour(), self.player.getRect().move(-self.cameraX, -self.cameraY))
+        self.testRenderEnemies()
         pygame.display.flip()
     
     """

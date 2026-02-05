@@ -44,9 +44,9 @@ class Map:
             endTileY = int((island.y + (island.height // 2))  // Map.TILE_SIZE)#
             for y in range(startTileY, endTileY):
                 for x in range(startTileX, endTileX):
-                    if x == SPAWN_TILE_X or y == Map.MAP_TILE_SIZE - 2:
+                    if x <= 2 or y >= Map.MAP_TILE_SIZE - 2 or x >= Map.MAP_TILE_SIZE - 2 or y <= 2:
                         continue # temp fix for bug involving being trapped inside spawn island
-                    if x == startTileX or x == endTileX - 1 or y == startTileY or y == endTileY - 1:
+                    if x == startTileX or x == endTileX - 1  or y == endTileY - 1:
                         if randint(0,2) == 1:
                             continue
                     """
@@ -65,7 +65,7 @@ class Map:
     Populates the map with path islands
     """
     def populateWithIslands(self):
-        self.islands.append(self.createPathIsland(Island(0 * Map.TILE_SIZE, (Map.MAP_TILE_SIZE - 1) * Map.TILE_SIZE,0,0)))
+        self.islands.append(Island(Map.TILE_SIZE * 10, Map.TILE_SIZE * 96, 4 * Map.TILE_SIZE, 4 * Map.TILE_SIZE))
         for i in range(100):
             try:
                 self.islands.append(self.createPathIsland(self.islands[-1]))
@@ -78,7 +78,7 @@ class Map:
     """
     Generates islands to fill the empty space in the map, some may be unreachable by the player
     """
-    def fillAmbientIslands(self, count=200):
+    def fillAmbientIslands(self, count=250):
         counter = 0
         while counter < count:
             counter+= 1
@@ -135,7 +135,7 @@ class Map:
         for y in range(1, Map.MAP_TILE_SIZE):
             for x in range(2, Map.MAP_TILE_SIZE - 1):
                 if self.mapGrid[y][x].tileType == TileType.BLOCK and self.mapGrid[y-1][x].tileType == TileType.EMPTY:
-                    if randint(0,5) == 1:
+                    if randint(0,12) == 1:
                         self.mapGrid[y-1][x].tileType = TileType.SPIKE
 
 
