@@ -11,7 +11,7 @@ SPAWN_TILE_Y = 97
 
 class Map:
     TILE_SIZE = Tile.TILE_SIZE
-    MAP_TILE_SIZE = 100 # 800x800 tile map, so 6400x6400 pixel map
+    MAP_TILE_SIZE = 100 # 100x100 tile map, so 6400x6400 pixel map
     def __init__(self, mapSeed):
         self.mapGrid = []
         self.islands = []
@@ -38,7 +38,8 @@ class Map:
 
         #self.mapGrid[Map.MAP_TILE_SIZE - 2][Map.MAP_TILE_SIZE - 2].tileType = TileType.EXIT
         self.populateWithIslands()
-        #self.fillAmbientIslands()
+        self.generateExit()
+        self.fillAmbientIslands()
         for island in self.islands:
             startTileX = int((island.x - (island.width // 2)) // Map.TILE_SIZE)
             startTileY = int((island.y - (island.height // 2))  // Map.TILE_SIZE)
@@ -58,7 +59,6 @@ class Map:
                         self.mapGrid[y][x].tileType = TileType.BLOCK
                     except IndexError:
                         continue
-        self.generateExit()
         self.populateWithSpikes()
 
 
@@ -72,7 +72,8 @@ class Map:
         for i in range(100):
             for attempt in range(5):
                 try:
-                    self.islands.append(self.createPathIsland(self.islands[-1]))
+                    islandToAdd = self.createPathIsland(self.islands[-1])
+                    self.islands.append(islandToAdd)
                     break
                 except IndexError:
                     break
@@ -136,6 +137,10 @@ class Map:
         if tileY < 0 or tileX < 0:
             raise IndexError
         if any(self.intersects(island, other, paddingTiles=1) for other in self.islands):
+            raise IndexError
+        if island.x + (island.width / 2) >= Map.MAP_TILE_SIZE * Map.TILE_SIZE or island.x - (island.width / 2) <= 0:
+            raise IndexError
+        if island.y + (island.height / 2) >= Map.MAP_TILE_SIZE * Map.TILE_SIZE or island.y - (island.height / 2) <= 0:
             raise IndexError
         
 
@@ -208,12 +213,13 @@ class Map:
 
 
     def generateExit(self):
-        finalIsland = self.islands[-1]
+        finalIsland = self.islands[-2]
         topOfIsland = finalIsland.y - (finalIsland.height // 2)
         x = finalIsland.x // Map.TILE_SIZE
         y = topOfIsland // Map.TILE_SIZE
+        print(finalIsland.x, finalIsland.y)
         print(topOfIsland, y, x)
-        self.mapGrid[int(y +1)][int(x)].tileType == TileType.EXIT
+        self.mapGrid[int(y-1)][int(x)].tileType = TileType.EXIT
 
 
         
