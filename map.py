@@ -23,10 +23,11 @@ class Map:
     generates the map grid, populates the map with islands and spikes
     """
     def createMapGrid(self):
+        R = randint(0,255)
         for y in range(Map.MAP_TILE_SIZE):
             temp = [] # stores all x for a given y
             for x in range(Map.MAP_TILE_SIZE):
-                temp.append(Tile(x, y))
+                temp.append(Tile(x, y, R))
             self.mapGrid.append(temp)
         for cell in self.mapGrid[Map.MAP_TILE_SIZE-1]:
             cell.tileType = TileType.BLOCK
@@ -168,7 +169,7 @@ class Map:
     def populateWithSpikes(self):
         for y in range(1, Map.MAP_TILE_SIZE):
             for x in range(2, Map.MAP_TILE_SIZE - 1):
-                if self.mapGrid[y][x].tileType == TileType.BLOCK and self.mapGrid[y-1][x].tileType == TileType.EMPTY:
+                if self.mapGrid[y][x].tileType == TileType.BLOCK and self.mapGrid[y-1][x].tileType == TileType.EMPTY and self.mapGrid[y-2][x].tileType == TileType.EMPTY:
                     if randint(0,12) == 1:
                         self.mapGrid[y-1][x].tileType = TileType.SPIKE
 

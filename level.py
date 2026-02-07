@@ -43,6 +43,9 @@ class Level:
         self.timer = 255
         self.health = 3
         self.enemyAcceleration = 0
+        self.blockImage = pygame.image.load("Assets/blockPLACEHOLDER2.png").convert_alpha()
+        self.exitImage = pygame.image.load("Assets/exitPLACEHOLDER.png").convert_alpha()
+        self.spikeImage = pygame.image.load("Assets/spikePLACEHOLDER.png").convert_alpha()
 
 
     # function to start the game
@@ -153,7 +156,16 @@ class Level:
                 tempRect = self.map.mapGrid[y][x].getRect()
                 tempRect.x -= (self.cameraX)
                 tempRect.y -= (self.cameraY)
-                pygame.draw.rect(self.screen, self.map.mapGrid[y][x].getColour(), tempRect)
+                #pygame.draw.rect(self.screen, self.map.mapGrid[y][x].getColour(), tempRect)
+                if self.map.mapGrid[y][x].tileType.name == "BLOCK":
+                    self.screen.blit(self.blockImage, (tempRect.x, tempRect.y))
+                elif self.map.mapGrid[y][x].tileType.name == "SPIKE":
+                    pygame.draw.rect(self.screen, self.map.mapGrid[y][x].getColour(), tempRect)
+                    self.screen.blit(self.spikeImage, (tempRect.x, tempRect.y))
+                elif self.map.mapGrid[y][x].tileType.name == "EXIT":
+                    self.screen.blit(self.exitImage, (tempRect.x, tempRect.y))
+                else:
+                    pygame.draw.rect(self.screen, self.map.mapGrid[y][x].getColour(), tempRect)
         pygame.draw.rect(self.screen, self.player.getColour(), self.player.getRect().move(-self.cameraX, -self.cameraY))
         self.renderEnemies()
         pygame.display.flip()
@@ -306,7 +318,7 @@ class Level:
                 self.proceedToNextLevel()
 
     def proceedToNextLevel(self):
-        self.__init__()
+        self.__init__(self.sceneManager)
         self.startMap()
         
 

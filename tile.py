@@ -3,13 +3,13 @@ from pygame import Rect
 from random import randint
 class Tile:
     TILE_SIZE = 64
-    def __init__(self, tileX, tileY):
+    def __init__(self, tileX, tileY, R):
         self.tileX = tileX
         self.tileY = tileY
         self.x = self.tileX * Tile.TILE_SIZE
         self.y = self.tileY * Tile.TILE_SIZE
         self.tileType = TileType.EMPTY
-        self.debuggingColors = (150,0,randint(0,255))
+        self.backgroundColours = (R,0,randint(0,255))
         # i believe these will be the top left corner of each cell?
 
     def getRect(self):
@@ -17,13 +17,13 @@ class Tile:
     
     def getColour(self):
         if self.tileType == TileType.EMPTY:
-            return self.debuggingColors
+            return self.backgroundColours
         elif self.tileType == TileType.BLOCK:
             return (0,0,0)
         elif self.tileType  == TileType.EXIT:
             return (0,255,0)
         elif self.tileType == TileType.SPIKE:
-            return (255,0,0)
+            return self.backgroundColours
         else:
             print(self.tileType)
             raise ValueError("Invalid tile type")
