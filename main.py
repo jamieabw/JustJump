@@ -1,10 +1,14 @@
 from pygame import init
-from menu import Menu
+from mainMenu import MainMenu
 from sceneManager import SceneManager
+from deathMenu import DeathMenu
+from shopMenu import ShopMenu
+from level import Level
 
 def main(debug=False):
     init()
-    SceneManager(Menu).beginScene(menu=True)
+    manager = SceneManager(MainMenu, Level, MainMenu, DeathMenu, ShopMenu)
+    manager.run()
 
 if __name__ == "__main__":
     main()

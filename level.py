@@ -31,7 +31,8 @@ TIME_TO_REACH_MAX_MOV = MAX_SIDEWAY_VELOCITY / MOVEMENT_ACCELERATION
 
 
 class Level:
-    def __init__(self):
+    def __init__(self, sceneManager):
+        self.sceneManager = sceneManager
         self.level = 0
         self.delta = 0
         self.tilesToCheck = ()
@@ -46,11 +47,15 @@ class Level:
 
     # function to start the game
     def run(self, screen):
+        print(2)
         self.screen = screen#pygame.display.set_mode((1000, 800))
         self.running = True
         self.clock = pygame.time.Clock()
         self.startMap()
         self.runLoop()
+        #self.sceneManager.changeScene( DeathMenu )
+        #self.sceneManager.beginScene(menu=True)
+        
 
     """
     Generate i enemies in the map
@@ -311,3 +316,4 @@ class Level:
     """
     def reset(self):
         self.running = False
+        self.sceneManager.changeScene(self.sceneManager.DeathMenu)  

@@ -1,19 +1,28 @@
-import pygame
 import pygame_menu
-from level import Level
 
 class Menu:
-    def __init__(self, screen, sceneManager):
-        self.screen = screen
-        self.sceneManager = sceneManager
-        self.menu = pygame_menu.Menu("TimEscape", screen.get_width(), screen.get_height())
-        #self.menu.add.text_input('Name :', default='John Doe')
-        #self.menu.add.selector('Difficulty :', [('Hard', 1), ('Easy', 2)])
-        self.menu.add.button('Play', self.startLevel)
-        self.menu.add.button('Quit', pygame_menu.events.EXIT)
-        self.menu.mainloop(self.screen)
+    def __init__(self, sceneManager):
+        self.customTheme = pygame_menu.themes.THEME_DARK.copy()
+        self.customTheme = pygame_menu.themes.THEME_DARK.copy()
+        self.customTheme.background_color = (15, 15, 20)
+        self.customTheme.title_background_color = (25, 25, 35)
+        self.customTheme.widget_font_color = (220, 220, 220)
+        self.customTheme.widget_selection_color = (100, 100, 255)
+        self.customTheme.title = False
 
-    def startLevel(self):
-        self.sceneManager.changeScene(Level())
-        self.sceneManager.beginScene()
+        # Load 8-bit font
+        self.font = pygame_menu.font.FONT_8BIT
+        self.customTheme.title_font = self.font
+        self.customTheme.widget_font = self.font
+
+        self.customTheme.widget_font_size = 30
+        self.customTheme.title_font_size = 50
+        self.screen = sceneManager.screen
+        self.sceneManager = sceneManager
+        self.menu = pygame_menu.Menu("", self.screen.get_width(), self.screen.get_height(), theme=self.customTheme)
+
+    def run(self, screen):
+        self.menu.mainloop(screen, disable_loop=True)
+        
+        
 

@@ -1,23 +1,27 @@
 import pygame
-from level import Level
-from menu import Menu
-
 """
 the hope is that eventually a scene management system can be used to more efficiently change scenes (levels, menus) more
 fluidly without annoying repeated code
 """
 class SceneManager:
-    def __init__(self, initialScene):
-        self.currentScene = initialScene
+    def __init__(self, initialScene, Level, MainMenu, DeathMenu, ShopMenu):
+        self.Level = Level
+        self.MainMenu = MainMenu
+        self.DeathMenu = DeathMenu
+        self.ShopMenu = ShopMenu
         self.screen = pygame.display.set_mode((1800,1000))
+
+        self.currentScene = initialScene(self)
          
     def changeScene(self, newScene):
-        self.currentScene = newScene
+        self.currentScene = newScene(self)
 
-    def beginScene(self, menu=False):
-        if menu:
-            self.currentScene(self.screen, self)
-        else:
+    def run(self):
+        clock = pygame.time.Clock()
+
+        while True:
             self.currentScene.run(self.screen)
+            pygame.display.flip()
+            clock.tick(60)
 
 
