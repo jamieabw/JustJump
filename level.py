@@ -5,17 +5,6 @@ from player import Player
 from tile import TileType
 from walker import Walker
 
-"""
-CURRENTLY: there is a grid system, and a player (kind of?), there is momentum type physics and
-gravity is already implemented, the camera has also been successfully implemented
-TODO: 
-- add spike generation
-- test entity spawning
-- entity pathfinding
-- timer implementation
-- finalise island generation
-"""
-
 
 # constants
 FPS = 60
@@ -34,23 +23,23 @@ class Level:
     def __init__(self, sceneManager):
         self.sceneManager = sceneManager
         self.level = 0
-        self.delta = 0
-        self.tilesToCheck = ()
-        self.cameraX, self.cameraY = (0,0)
-        self.enemies = []
-        self.collisionTypes = {"top": False, "bottom":False, "left":False,"right":False}
-        self.airTimer =0
-        self.timer = 255
-        self.health = 3
-        self.enemyAcceleration = 0
-        self.blockImage = pygame.image.load("Assets/blockPLACEHOLDER2.png").convert_alpha()
+        self.blockImage = pygame.image.load("Assets/blockPLACEHOLDER3.png").convert_alpha()
+        self.blockImage = pygame.transform.scale(self.blockImage, (Map.TILE_SIZE, Map.TILE_SIZE))
+
         self.exitImage = pygame.image.load("Assets/exitPLACEHOLDER.png").convert_alpha()
+        self.exitImage = pygame.transform.scale(self.exitImage, (Map.TILE_SIZE, Map.TILE_SIZE))
         self.spikeImage = pygame.image.load("Assets/spikePLACEHOLDER.png").convert_alpha()
+
+        self.enemyImage = pygame.image.load("Assets/enemyPLACEHOLDER.png").convert_alpha()
+
+        self.font = pygame.font.Font("Assets/ThaleahFat.ttf", 64)
+        self.background = pygame.image.load("Assets/background2.png").convert_alpha()
+        self.background = pygame.transform.scale(self.background, (Map.TILE_SIZE * Map.MAP_TILE_SIZE, Map.TILE_SIZE * Map.MAP_TILE_SIZE))
+
 
 
     # function to start the game
     def run(self, screen):
-        print(2)
         self.screen = screen#pygame.display.set_mode((1000, 800))
         self.running = True
         self.clock = pygame.time.Clock()
@@ -77,7 +66,8 @@ class Level:
             if enemy.alive:
                 enemy.movement(self.map, self.delta)
                 tempRect = pygame.Rect(enemy.x - self.cameraX, enemy.y - self.cameraY, enemy.width, enemy.height)
-                pygame.draw.rect(self.screen, (255,255,255), tempRect)
+                #pygame.draw.rect(self.screen, (255,255,255), tempRect)
+                self.screen.blit(self.enemyImage, (tempRect.left, tempRect.top))
 
                 
 
@@ -91,7 +81,16 @@ class Level:
         print(f"MAP SEED: {seed}")
         self.map = Map(seed)
         self.map.createMapGrid()
+        self.enemies = []
         self.generateEnemies()
+        self.enemyAcceleration = 0
+        self.delta = 0
+        self.tilesToCheck = ()
+        self.cameraX, self.cameraY = (0,0)
+        self.collisionTypes = {"top": False, "bottom":False, "left":False,"right":False}
+        self.airTimer =0
+        self.timer = 255
+        self.health = 3
         self.downVel = 0
         self.moveVel = 0
 
@@ -145,6 +144,7 @@ class Level:
     """
     def render(self):
         self.screen.fill((0,0,0))
+        self.screen.blit(self.background, (-self.cameraX, -self.cameraY))
         startX = min(int(self.cameraX // Map.TILE_SIZE), 100)
         endX   = min(int((self.cameraX + self.screen.get_width()) // (Map.TILE_SIZE - 1)) + 1, 100)
         startY = min(int(self.cameraY // Map.TILE_SIZE), 100)
@@ -158,16 +158,23 @@ class Level:
                 tempRect.y -= (self.cameraY)
                 #pygame.draw.rect(self.screen, self.map.mapGrid[y][x].getColour(), tempRect)
                 if self.map.mapGrid[y][x].tileType.name == "BLOCK":
-                    self.screen.blit(self.blockImage, (tempRect.x, tempRect.y))
+                    self.screen.blit(pygame.transform.flip(self.blockImage, (y * x + x) % 2, (x * y * x ** 2) % 2), (tempRect.x, tempRect.y))
+                    
                 elif self.map.mapGrid[y][x].tileType.name == "SPIKE":
-                    pygame.draw.rect(self.screen, self.map.mapGrid[y][x].getColour(), tempRect)
+                    #pygame.draw.rect(self.screen, self.map.mapGrid[y][x].getColour(), tempRect)
                     self.screen.blit(self.spikeImage, (tempRect.x, tempRect.y))
                 elif self.map.mapGrid[y][x].tileType.name == "EXIT":
                     self.screen.blit(self.exitImage, (tempRect.x, tempRect.y))
-                else:
-                    pygame.draw.rect(self.screen, self.map.mapGrid[y][x].getColour(), tempRect)
+                """else:
+                    pygame.draw.rect(self.screen, self.map.mapGrid[y][x].getColour(), tempRect)"""
         pygame.draw.rect(self.screen, self.player.getColour(), self.player.getRect().move(-self.cameraX, -self.cameraY))
         self.renderEnemies()
+        self.levelText = self.font.render(f"Level {self.level}", True, (255,255,255,0.54))
+        self.timerText = self.font.render(f"{round(self.timer)}", True, (255,255,255,0.54))
+        self.healthText = self.font.render(f"HP: {self.health}", True, (255,255,255,0.54))
+        self.screen.blit(self.levelText, (0,0))
+        self.screen.blit(self.timerText, (self.screen.get_width() //2, 0))
+        self.screen.blit(self.healthText, (0, self.screen.get_height() - self.healthText.get_height()))
         pygame.display.flip()
     
     """
@@ -260,6 +267,7 @@ class Level:
 
             elif tile.tileType.name == "EXIT":
                 self.proceedToNextLevel()
+                self.player.x, self.player.y = (SPAWN_TILE_X * Map.TILE_SIZE,SPAWN_TILE_Y* Map.TILE_SIZE) # fixes jumping to double increment level
 
 
     """
@@ -294,6 +302,8 @@ class Level:
                     self.reset()
                 self.moveVel = 0
 
+        
+
 
     """
     deals with collisions on the y-axis
@@ -316,10 +326,12 @@ class Level:
 
             elif tile.tileType.name == "EXIT":
                 self.proceedToNextLevel()
+                self.player.x, self.player.y = (SPAWN_TILE_X * Map.TILE_SIZE,SPAWN_TILE_Y* Map.TILE_SIZE) # fixes jumping to double increment level
+
 
     def proceedToNextLevel(self):
-        self.__init__(self.sceneManager)
         self.startMap()
+        
         
 
 
