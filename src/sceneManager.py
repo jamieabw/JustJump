@@ -6,7 +6,7 @@ class SceneManager:
         self.MainMenu = MainMenu
         self.DeathMenu = DeathMenu
         self.ShopMenu = ShopMenu
-        self.screen = pygame.display.set_mode((1800,1000))
+        self.screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
 
         self.currentScene = initialScene(self)
          
