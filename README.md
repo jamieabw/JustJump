@@ -26,13 +26,15 @@ pip install -r requirements.txt
 ### Windows
 
 ```
-python src\main.py
+cd src
+python main.py
 ```
 
 ### Mac / Linux
 
 ```
-python src/main.py
+cd src
+python main.py
 ```
 
 ---
