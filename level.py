@@ -1,3 +1,4 @@
+import math
 import pygame # type: ignore
 import random
 from map import Map, SPAWN_TILE_X, SPAWN_TILE_Y
@@ -36,9 +37,11 @@ class Level:
 
         self.exitImage = pygame.image.load("Assets/exitPLACEHOLDER.png").convert_alpha()
         self.exitImage = pygame.transform.scale(self.exitImage, (Map.TILE_SIZE, Map.TILE_SIZE))
-        self.spikeImage = pygame.image.load("Assets/spikePLACEHOLDER.png").convert_alpha()
-
+        self.spikeImage = pygame.image.load("Assets/spike.png").convert_alpha()
+        self.playerImage = pygame.image.load("Assets/player.png").convert_alpha()
         self.enemyImage = pygame.image.load("Assets/enemyPLACEHOLDER.png").convert_alpha()
+        self.playerAttackImage = pygame.image.load("Assets/playerAttack.png")
+        
 
         self.font = pygame.font.Font("Assets/ThaleahFat.ttf", 64)
         self.background = pygame.image.load("Assets/background2.png").convert_alpha()
@@ -48,6 +51,8 @@ class Level:
         self.enemyAttackAudio = pygame.mixer.Sound("Assets/enemyAttack.wav")
         self.playerAttackAudio = pygame.mixer.Sound("Assets/playerAttack.wav")
         self.jumpAudio = pygame.mixer.Sound("Assets/jump.wav")
+        self.previousPlayerImage = self.playerImage
+        self.previousPlayerAttackImage = self.playerAttackImage # there is probably a better way for both of these?
 
 
     # function to start the game
@@ -65,7 +70,7 @@ class Level:
     Generate i enemies in the map
     """
 
-    def generateEnemies(self, enemyCount=10):
+    def generateEnemies(self, enemyCount=25):
         for i in range(enemyCount):
             self.enemies.append(Walker(0,0,50,50,100,self.map.islands, self.map))
 
@@ -108,6 +113,7 @@ class Level:
         self.downVel = 0
         self.moveVel = 0
         self.clockLoopAudio.play(loops=-1)
+        self.idleTime = 0
 
 
     
@@ -131,14 +137,14 @@ class Level:
                 if self.moveVel > 0: # moving right/facing right
                     print("facing right")
                     tempRect = pygame.rect.Rect((self.player.x + self.player.width), (self.player.y), self.player.width * 1.5, self.player.height)
-                    self.screen.blit(self.spikeImage, (tempRect.x - self.cameraX, tempRect.y - self.cameraY))
+                    self.screen.blit(self.playerAttackImage, (tempRect.x - self.cameraX, tempRect.y - self.cameraY))
                     self.weaponCollision(tempRect)
                     pygame.display.flip()
                     print(tempRect.x, tempRect.y)
                 elif self.moveVel < 0: # moving left / facing left
                     print("facing left")
-                    tempRect = pygame.rect.Rect((self.player.x -  (1.5 *self.player.width)), (self.player.y), self.player.width * 1.5, self.player.height)
-                    self.screen.blit(self.spikeImage, (tempRect.x - self.cameraX, tempRect.y - self.cameraY))
+                    tempRect = pygame.rect.Rect((self.player.x -  (self.player.width)), (self.player.y), self.player.width * 1.5, self.player.height)
+                    self.screen.blit(self.playerAttackImage, (tempRect.x - self.cameraX, tempRect.y - self.cameraY))
                     self.weaponCollision(tempRect)
                     pygame.display.flip()
                     
@@ -183,6 +189,7 @@ class Level:
         startY = min(int(self.cameraY // Map.TILE_SIZE), 100)
         endY   = min(int((self.cameraY + self.screen.get_height()) // (Map.TILE_SIZE)) + 1, 100)
         # utilise above variables to optimise enemy spawning
+        self.renderEnemies()
 
         for y in range(startY, endY):
             for x in range(startX, endX):
@@ -195,13 +202,25 @@ class Level:
                     
                 elif self.map.mapGrid[y][x].tileType.name == "SPIKE":
                     #pygame.draw.rect(self.screen, self.map.mapGrid[y][x].getColour(), tempRect)
-                    self.screen.blit(self.spikeImage, (tempRect.x, tempRect.y))
+                    self.screen.blit(self.spikeImage, (tempRect.x - 10, tempRect.y - 10)) # 10 makes it visually easier for player
                 elif self.map.mapGrid[y][x].tileType.name == "EXIT":
                     self.screen.blit(self.exitImage, (tempRect.x, tempRect.y))
                 """else:
                     pygame.draw.rect(self.screen, self.map.mapGrid[y][x].getColour(), tempRect)"""
-        pygame.draw.rect(self.screen, self.player.getColour(), self.player.getRect().move(-self.cameraX, -self.cameraY))
-        self.renderEnemies()
+        if self.moveVel < 0.5 * FPS and self.moveVel > -0.5 * FPS:
+            self.idleTime += self.delta
+            idleOffset = math.sin(self.idleTime * 3) # causes player to breathe when idle
+        else:
+            self.idleTime, idleOffset = (0,0)
+        if self.moveVel > 0:
+            self.screen.blit(self.playerImage, self.player.getRect().move(-self.cameraX, (-self.cameraY + idleOffset)))
+            self.previousPlayerImage = self.playerImage
+        elif self.moveVel < 0:
+            self.screen.blit(pygame.transform.flip(self.playerImage, True, False), self.player.getRect().move(-self.cameraX, (-self.cameraY + idleOffset)))
+            self.previousPlayerImage = pygame.transform.flip(self.playerImage, True, False)
+        else:
+            self.screen.blit(self.previousPlayerImage, self.player.getRect().move(-self.cameraX, -self.cameraY))
+        #pygame.draw.rect(self.screen, self.player.getColour(), self.player.getRect().move(-self.cameraX, -self.cameraY))
         self.levelText = self.font.render(f"Level {self.level}", True, (255,255,255,0.54))
         self.timerText = self.font.render(f"{round(self.timer)}", True, (255,255,255,0.54))
         self.healthText = self.font.render(f"HP: {self.health}", True, (255,255,255,0.54))

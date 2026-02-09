@@ -170,7 +170,7 @@ class Map:
         for y in range(1, Map.MAP_TILE_SIZE):
             for x in range(2, Map.MAP_TILE_SIZE - 1):
                 if self.mapGrid[y][x].tileType == TileType.BLOCK and self.mapGrid[y-1][x].tileType == TileType.EMPTY and self.mapGrid[y-2][x].tileType == TileType.EMPTY:
-                    if randint(0,12) == 1:
+                    if randint(0,6) == 1 and self.mapGrid[y][x + 1].tileType != TileType.EMPTY and self.mapGrid[y][x - 1].tileType != TileType.EMPTY:
                         self.mapGrid[y-1][x].tileType = TileType.SPIKE
 
 
