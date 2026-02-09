@@ -27,30 +27,30 @@ class Level:
     def __init__(self, sceneManager):
         self.sceneManager = sceneManager
         self.level = 0
-        with open("data/data.json", "r") as f:
+        with open("../data/data.json", "r") as f:
             self.data = json.load(f)
         if self.data["multijumpUpgrade"] > 0:
             self.multijump = 4
         else:
             self.multijump = 1
         # image loading
-        self.blockImage = pygame.image.load("Assets/blockPLACEHOLDER3.png").convert_alpha()
+        self.blockImage = pygame.image.load("../Assets/blockPLACEHOLDER3.png").convert_alpha()
         self.blockImage = pygame.transform.scale(self.blockImage, (Map.TILE_SIZE, Map.TILE_SIZE))
-        self.exitImage = pygame.image.load("Assets/exitPLACEHOLDER.png").convert_alpha()
+        self.exitImage = pygame.image.load("../Assets/exitPLACEHOLDER.png").convert_alpha()
         self.exitImage = pygame.transform.scale(self.exitImage, (Map.TILE_SIZE, Map.TILE_SIZE))
-        self.spikeImage = pygame.image.load("Assets/spike.png").convert_alpha()
-        self.playerImage = pygame.image.load("Assets/player.png").convert_alpha()
-        self.enemyImage = pygame.image.load("Assets/enemyPLACEHOLDER.png").convert_alpha()
-        self.playerAttackImage = pygame.image.load("Assets/playerAttack.png")
+        self.spikeImage = pygame.image.load("../Assets/spike.png").convert_alpha()
+        self.playerImage = pygame.image.load("../Assets/player.png").convert_alpha()
+        self.enemyImage = pygame.image.load("../Assets/enemyPLACEHOLDER.png").convert_alpha()
+        self.playerAttackImage = pygame.image.load("../Assets/playerAttack.png")
         #font loading
-        self.font = pygame.font.Font("Assets/ThaleahFat.ttf", 64)
-        self.background = pygame.image.load("Assets/background2.png").convert_alpha()
+        self.font = pygame.font.Font("../Assets/ThaleahFat.ttf", 64)
+        self.background = pygame.image.load("../Assets/background2.png").convert_alpha()
         self.background = pygame.transform.scale(self.background, (Map.TILE_SIZE * Map.MAP_TILE_SIZE, Map.TILE_SIZE * Map.MAP_TILE_SIZE))
-        self.clockLoopAudio = pygame.mixer.Sound("Assets/clockLoop.wav")
-        self.deathAudio = pygame.mixer.Sound("Assets/death.wav")
-        self.enemyAttackAudio = pygame.mixer.Sound("Assets/enemyAttack.wav")
-        self.playerAttackAudio = pygame.mixer.Sound("Assets/playerAttack.wav")
-        self.jumpAudio = pygame.mixer.Sound("Assets/jump.wav")
+        self.clockLoopAudio = pygame.mixer.Sound("../Assets/clockLoop.wav")
+        self.deathAudio = pygame.mixer.Sound("../Assets/death.wav")
+        self.enemyAttackAudio = pygame.mixer.Sound("../Assets/enemyAttack.wav")
+        self.playerAttackAudio = pygame.mixer.Sound("../Assets/playerAttack.wav")
+        self.jumpAudio = pygame.mixer.Sound("../Assets/jump.wav")
         self.previousPlayerImage = self.playerImage
         self.previousPlayerAttackImage = self.playerAttackImage # there is probably a better way for both of these?
 
@@ -437,6 +437,6 @@ class Level:
         self.running = False
         self.clockLoopAudio.stop()
         self.deathAudio.play()
-        with open("data/data.json", "w") as f:
+        with open("../data/data.json", "w") as f:
             json.dump(self.data, f)
         self.sceneManager.changeScene(self.sceneManager.DeathMenu)  

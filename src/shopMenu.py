@@ -18,7 +18,7 @@ class ShopMenu(Menu):
 
     def __init__(self, sceneManager):
         super().__init__(sceneManager)
-        with open("data/data.json", "r") as f:
+        with open("../data/data.json", "r") as f:
             self.data = json.load(f)
 
         self.coins = self.data["coins"]
@@ -51,7 +51,7 @@ class ShopMenu(Menu):
         self.coins -= cost
         self.data["coins"] = self.coins
         self.data[ability.abilityKey] += 1
-        with open("data/data.json", "w") as f:
+        with open("../data/data.json", "w") as f:
             json.dump(self.data, f)
         self.coinLabel.set_title(f"{self.coins} coins")
         for ability in ShopMenu.abilities:

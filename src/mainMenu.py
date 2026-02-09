@@ -8,7 +8,7 @@ class MainMenu(Menu):
     def __init__(self, sceneManager):
         self.Level = Level
         super().__init__(sceneManager)
-        with open("data/data.json", "r") as f:
+        with open("../data/data.json", "r") as f:
             self.highScore = json.load(f)["highestLevel"]
         self.menu.add.label(
             "Just Jump",

@@ -11,9 +11,9 @@ def main():
     mixer.init()
     init()
     # check if the data exisrs if not then create the file
-    if not os.path.exists("data/data.json"):
+    if not os.path.exists("../data/data.json"):
         defaultData = {"coins": 0, "highestLevel" : 0, "healthUpgrade":0, "multijumpUpgrade":0}
-        with open("data/data.json", "w") as f:
+        with open("../data/data.json", "w") as f:
             json.dump(defaultData, f)
 
     manager = SceneManager(MainMenu, Level, MainMenu, DeathMenu, ShopMenu)
