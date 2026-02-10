@@ -69,10 +69,14 @@ class Level:
     """
     def showLevelScreen(self):
         levelScreenText = self.font.render(f"LEVEL {self.level}", True, (255,255,255))
+        levelScreenHintText = self.font.render(f"CLIMB. KILL FOR TIME. FIND THE PORTAL.", True, (255,255,255))
+    
         self.screen.fill((15,15,20))
         self.screen.blit(levelScreenText, ((self.screen.get_width() // 2) - (levelScreenText.get_width() //2), (self.screen.get_height() // 2) - levelScreenText.get_height()))
+        self.screen.blit(levelScreenHintText, ((self.screen.get_width() // 2) - (levelScreenHintText.get_width() //2), (self.screen.get_height() // 2) - levelScreenText.get_height() + levelScreenHintText.get_height()))
+        
         pygame.display.flip()
-        localTimer = 1
+        localTimer = 2
         while localTimer > 0:
             localDelta = pygame.time.Clock().tick(FPS) / 1000
             localTimer -= localDelta
